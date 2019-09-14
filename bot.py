@@ -82,7 +82,7 @@ async def ban(ctx, member: typing.Union[discord.User, int], days: typing.Optiona
         days = 7
     # Combine the reason so the user doesn't have to use quotations
     full_reason = " ".join(word for word in reason)
-    # Ban the member, remove the messages and delete the specified amount of messages (default 0), also inform about the action
+    # Ban the member and delete the specified amount of messages (default 0), also inform about the action
     await ctx.message.guild.ban(discord.Object(id=memberid), reason=full_reason, delete_message_days=days)
     await ctx.send("<@{}> was banned.".format(memberid))
     print("{.author} banned {} with reason: {}".format(ctx, member, full_reason))
