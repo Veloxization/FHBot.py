@@ -350,6 +350,12 @@ async def unmute_error(ctx, error):
 
 @bot.command()
 @commands.has_permissions(kick_members=True)
+async def message(ctx, member: discord.Member, *, message: str):
+    signature = "I'm a bot and I was only asked to deliver this message. Replying to me will most likely not get a response."
+    await member.send("{}\n\n{}".format(message, signature))
+
+@bot.command()
+@commands.has_permissions(kick_members=True)
 async def testwelcome(ctx):
     # For testing the welcoming image
     await on_member_join(ctx.author)
@@ -523,19 +529,21 @@ async def commands_error(ctx, error):
         await ctx.send("Usage: commands <category>\n__**Categories**__\n**Admin**: Admin commands\n**Music**: Music commands\n**Info**: Information about the guild and its members")
 
 async def statusChanger():
-    games = [
-        "to steal the pancakes",
-        "root beer drinking game",
-        "with trash pandas",
-        "with a ban knif",
+    activities = [
+        "stealing the pancakes",
+        "drinking root beer",
+        "chasing trash pandas",
+        "holding a ban knif",
         "tickling the toe beans",
-        "with the cute beans",
+        "being a cute bean",
         "pineapples",
         "dead like extinct sonas",
     ]
     while True:
-        game = discord.Game(random.choice(games))
-        await bot.change_presence(activity=game)
+        activity = discord.Activity()
+        activity.name = random.choice(activities)
+        activity.type = discord.ActivityType.streaming
+        await bot.change_presence(activity=activity)
         await asyncio.sleep(20)
 
 
