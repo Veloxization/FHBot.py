@@ -380,7 +380,14 @@ class Moderator(commands.Cog):
     @commands.command()
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason: typing.Optional[str]):
+        if member == ctx.author:
+            await ctx.send("I... don't think that's a good idea. :3")
+            return
         await add_to_logs(ctx.message.content, ctx.author)
+        try:
+            await member.send(f"**You were kicked from Furry Hangout.**\nReason specified: {reason}")
+        except:
+            print(f"Couldn't DM {member} ({member.id}) with kick reason.")
         await member.kick(reason=reason)
         await ctx.send(f"{member.name} was kicked")
 
@@ -395,6 +402,10 @@ class Moderator(commands.Cog):
             memberid = member
         else:
             memberid = member.id
+        # Don't ban yourself
+        if ctx.author.id == memberid:
+            await ctx.send("You can't ban yourself! You're not as powerful as Yoja.")
+            return
         # The bot can't remove messages older than 7 days, so change any number greater than 7 to 7
         if delete > 7:
             delete = 7
@@ -1096,8 +1107,14 @@ async def statusChanger():
         with open('json/status.json') as json_data:
             activities = json.load(json_data)
             activity = discord.Activity(name=random.choice(activities), type=discord.ActivityType.competing)
-        await bot.change_presence(activity=activity)
-        await timer()
+        try:
+            await bot.change_presence(activity=activity)
+        except Exception as e:
+            print(f"Status change failed with error: {str(e)}")
+        try:
+            await timer()
+        except Exception as e:
+            print(f"Timer function failed with error: {str(e)}")
         await asyncio.sleep(20)
 
 async def timer():
@@ -1174,6 +1191,9 @@ async def timer():
     new_members = db.collection("NewMembers")
     for new_member in new_members.all():
         member = bot.get_guild(223340988314157056).get_member(new_member["id"])
+        if member is None:
+            new_members.delete(new_member["__id"])
+            continue
         roles = db.collection("Roles")
         fetched = roles.filter(lambda obj: obj["name"] == "read_the_rules")[0]["id"]
         new_member_role = bot.get_guild(223340988314157056).get_role(fetched)
@@ -1188,7 +1208,7 @@ async def timer():
                 print(f"Sent reminder of rule confirmation to {member.name}#{member.discriminator}")
             except:
                 print(f"Couldn't send an inactivity warning to {member.name}#{member.discriminator}")
-        elif delta.days == 7:
+        elif delta.days >= 7:
             try:
                 await member.send("You have been kicked from Furry Hangout for failure to go through rule confirmation.")
             except:
